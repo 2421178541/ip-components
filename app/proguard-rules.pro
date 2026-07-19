@@ -1,0 +1,2 @@
+-keep class com.ipwidget.** { *; }
+-dontwarn org.jetbrains.annotations.**
