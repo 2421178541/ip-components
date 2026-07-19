@@ -31,7 +31,7 @@
 
         <!-- 4x2 小组件 -->
         <receiver
-            android:name=".NetworkWidgetProvider"
+            android:name=".NetworkWidgetProvider4x2"
             android:exported="true"
             android:label="IP信息 4x2">
             <intent-filter>
