@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class NetworkWidgetProvider : AppWidgetProvider() {
+open class NetworkWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(
         context: Context,
