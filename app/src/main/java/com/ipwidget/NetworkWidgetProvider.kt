@@ -1,40 +1,106 @@
 package com.ipwidget
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.Context
+import android.content.Intent
+import android.widget.RemoteViews
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-object IpLookup {
+class NetworkWidgetProvider : AppWidgetProvider() {
 
-    /**
-     * 请求指定 URL 并返回响应正文（去除首尾空白）。
-     * 网络错误或非 2xx 响应会抛出异常，调用方需自行捕获。
-     */
-    fun fetchIpAddress(urlString: String): String {
-        var connection: HttpURLConnection? = null
-        try {
-            val url = URL(urlString)
-            connection = url.openConnection() as HttpURLConnection
-            connection.connectTimeout = 5000 // 5 秒超时
-            connection.readTimeout = 5000
-            connection.requestMethod = "GET"
-
-            val responseCode = connection.responseCode
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw Exception("HTTP $responseCode")
-            }
-
-            val reader = BufferedReader(InputStreamReader(connection.inputStream))
-            val response = StringBuilder()
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                response.append(line)
-            }
-            reader.close()
-            return response.toString().trim()
-        } finally {
-            connection?.disconnect()
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        for (appWidgetId in appWidgetIds) {
+            val views = RemoteViews(context.packageName, R.layout.widget_network)
+            views.setTextViewText(R.id.ipip, "国内 IP")
+            views.setTextViewText(R.id.ipsb, "国外 IP")
+            views.setTextViewText(R.id.ipipInfo, "正在获取...")
+            views.setTextViewText(R.id.ipsbInfo, "正在获取...")
+            views.setTextViewText(R.id.updateTime, "更新时间：--")
+            views.setOnClickPendingIntent(
+                R.id.refresh,
+                buildRefreshPendingIntent(context, appWidgetId)
+            )
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+            refreshWidget(context, appWidgetManager, appWidgetId)
         }
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == ACTION_REFRESH) {
+            val appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, 0)
+            if (appWidgetId != 0) {
+                onUpdate(context, AppWidgetManager.getInstance(context), intArrayOf(appWidgetId))
+            }
+        }
+    }
+
+    private fun refreshWidget(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int
+    ) {
+        Thread {
+            try {
+                val domesticIp = IpLookup.fetchIpAddress("http://myip.ipip.net")
+                val foreignIp = IpLookup.fetchIpAddress("https://checkip.amazonaws.com")
+                val timeText = "更新时间：${
+                    SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(Date())
+                }"
+
+                val updatedViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
+                    setTextViewText(R.id.ipip, "国内 IP")
+                    setTextViewText(R.id.ipsb, "国外 IP")
+                    setTextViewText(R.id.ipipInfo, domesticIp)
+                    setTextViewText(R.id.ipsbInfo, foreignIp)
+                    setTextViewText(R.id.updateTime, timeText)
+                    setOnClickPendingIntent(
+                        R.id.refresh,
+                        buildRefreshPendingIntent(context, appWidgetId)
+                    )
+                }
+
+                appWidgetManager.updateAppWidget(appWidgetId, updatedViews)
+            } catch (e: Exception) {
+                // 网络请求失败时，显示错误信息，避免小组件卡在“正在获取...”
+                val errorViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
+                    setTextViewText(R.id.ipip, "国内 IP")
+                    setTextViewText(R.id.ipsb, "国外 IP")
+                    setTextViewText(R.id.ipipInfo, "获取失败")
+                    setTextViewText(R.id.ipsbInfo, "获取失败")
+                    setTextViewText(R.id.updateTime, "请检查网络")
+                    setOnClickPendingIntent(
+                        R.id.refresh,
+                        buildRefreshPendingIntent(context, appWidgetId)
+                    )
+                }
+                appWidgetManager.updateAppWidget(appWidgetId, errorViews)
+            }
+        }.start()
+    }
+
+    private fun buildRefreshPendingIntent(context: Context, appWidgetId: Int): PendingIntent {
+        val intent = Intent(context, NetworkWidgetProvider::class.java).apply {
+            action = ACTION_REFRESH
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            appWidgetId,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    companion object {
+        private const val ACTION_REFRESH = "com.ipwidget.ACTION_REFRESH"
     }
 }
