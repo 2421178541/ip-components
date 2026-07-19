@@ -21,12 +21,13 @@
             android:textStyle="bold"
             android:textSize="18sp"/>
 
-        <ImageButton
+        <Button
             android:id="@+id/refresh"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@android:color/transparent"
-            android:src="@android:drawable/ic_popup_sync"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="刷新"
+            android:textSize="12sp"
+            android:background="@android:color/transparent" />
     </LinearLayout>
 
     <TextView

@@ -14,6 +14,6 @@
 4. 长按桌面，选择“小组件”，添加“IP Widget”。
 
 ## 说明
-- 国内 IP 使用 https://api.ipify.org
+- 国内 IP 使用 http://myip.ipip.net
 - 国外 IP 使用 https://checkip.amazonaws.com
 - 如果网络请求失败，会显示“获取失败”
