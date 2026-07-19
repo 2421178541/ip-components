@@ -22,15 +22,13 @@ class NetworkWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             try {
                 val views = RemoteViews(context.packageName, R.layout.widget_network)
-                views.setTextViewText(R.id.ipip, "国家")
-                views.setTextViewText(R.id.ipsb, "IP 地址")
-                views.setTextViewText(R.id.ipipInfo, "正在获取...")
-                views.setTextViewText(R.id.ipsbInfo, "正在获取...")
+                views.setTextViewText(R.id.title, "IP 信息")
+                views.setTextViewText(R.id.domesticLabel, "国内 IP")
+                views.setTextViewText(R.id.domesticInfo, "正在获取...")
+                views.setTextViewText(R.id.foreignLabel, "国外 IP")
+                views.setTextViewText(R.id.foreignInfo, "正在获取...")
                 views.setTextViewText(R.id.updateTime, "更新时间：--")
-                views.setOnClickPendingIntent(
-                    R.id.refresh,
-                    buildRefreshPendingIntent(context, appWidgetId)
-                )
+                views.setOnClickPendingIntent(R.id.refresh, buildRefreshPendingIntent(context, appWidgetId))
                 appWidgetManager.updateAppWidget(appWidgetId, views)
                 AppLogger.log("小组件 $appWidgetId 初始视图已更新，开始获取 IP")
                 refreshWidget(context, appWidgetManager, appWidgetId)
@@ -59,26 +57,32 @@ class NetworkWidgetProvider : AppWidgetProvider() {
         Thread {
             try {
                 AppLogger.log("开始网络请求...")
+                // 国内：ipip.net
+                val ipipText = IpLookup.fetchIpAddress("https://myip.ipip.net")
+                // 解析 ipip 返回的文本，例如：当前 IP：203.198.103.77  来自于：中国 北京 北京  联通
+                val ipipParts = ipipText.split("：", " ").filter { it.isNotEmpty() }
+                val domesticIp = if (ipipParts.size > 1) ipipParts[1] else "解析失败"
+                // 提取地点信息（简单去除“来自于：”字样）
+                val domesticLocation = if (ipipParts.size > 2) ipipText.substringAfter("来自于：").trim() else ""
+
+                // 国外：ip.sb
                 val geoJson = IpLookup.fetchIpAddress("https://api.ip.sb/geoip")
                 val json = JSONObject(geoJson)
-                val ip = json.optString("ip", "未知")
-                val country = json.optString("country", "未知")
-                AppLogger.log("获取到IP：$ip，国家：$country")
+                val foreignIp = json.optString("ip", "未知")
+                val foreignCountry = json.optString("country", "未知")
 
-                val timeText = "更新时间：${
-                    SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(Date())
-                }"
+                AppLogger.log("国内 IP：$domesticIp ($domesticLocation)，国外 IP：$foreignIp ($foreignCountry)")
+
+                val timeText = "更新时间：${SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(Date())}"
 
                 val updatedViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
-                    setTextViewText(R.id.ipip, "国家")
-                    setTextViewText(R.id.ipsb, "IP 地址")
-                    setTextViewText(R.id.ipipInfo, country)
-                    setTextViewText(R.id.ipsbInfo, ip)
+                    setTextViewText(R.id.title, "IP 信息")
+                    setTextViewText(R.id.domesticLabel, "国内 IP")
+                    setTextViewText(R.id.domesticInfo, "$domesticIp\n$domesticLocation".trim())
+                    setTextViewText(R.id.foreignLabel, "国外 IP")
+                    setTextViewText(R.id.foreignInfo, "$foreignIp ($foreignCountry)")
                     setTextViewText(R.id.updateTime, timeText)
-                    setOnClickPendingIntent(
-                        R.id.refresh,
-                        buildRefreshPendingIntent(context, appWidgetId)
-                    )
+                    setOnClickPendingIntent(R.id.refresh, buildRefreshPendingIntent(context, appWidgetId))
                 }
                 appWidgetManager.updateAppWidget(appWidgetId, updatedViews)
                 AppLogger.log("小组件更新成功")
@@ -86,15 +90,10 @@ class NetworkWidgetProvider : AppWidgetProvider() {
                 AppLogger.log("网络请求/更新失败：${e.message}")
                 try {
                     val errorViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
-                        setTextViewText(R.id.ipip, "国家")
-                        setTextViewText(R.id.ipsb, "IP 地址")
-                        setTextViewText(R.id.ipipInfo, "获取失败")
-                        setTextViewText(R.id.ipsbInfo, "获取失败")
+                        setTextViewText(R.id.domesticInfo, "获取失败")
+                        setTextViewText(R.id.foreignInfo, "获取失败")
                         setTextViewText(R.id.updateTime, "请检查网络")
-                        setOnClickPendingIntent(
-                            R.id.refresh,
-                            buildRefreshPendingIntent(context, appWidgetId)
-                        )
+                        setOnClickPendingIntent(R.id.refresh, buildRefreshPendingIntent(context, appWidgetId))
                     }
                     appWidgetManager.updateAppWidget(appWidgetId, errorViews)
                 } catch (updateException: Exception) {

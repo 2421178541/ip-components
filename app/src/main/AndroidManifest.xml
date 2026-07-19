@@ -16,15 +16,31 @@
             </intent-filter>
         </activity>
 
+        <!-- 3x2 小组件 -->
         <receiver
             android:name=".NetworkWidgetProvider"
-            android:exported="true">
+            android:exported="true"
+            android:label="IP信息 3x2">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/network_widget_info"/>
+                android:resource="@xml/widget_info_3x2"/>
         </receiver>
+
+        <!-- 4x2 小组件 -->
+        <receiver
+            android:name=".NetworkWidgetProvider"
+            android:exported="true"
+            android:label="IP信息 4x2">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_4x2"/>
+        </receiver>
+
     </application>
 </manifest>
