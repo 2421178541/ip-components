@@ -36,4 +36,10 @@ object IpLookup {
             connection?.disconnect()
         }
     }
+
+    // 解析 ipapi.co 返回的 JSON（简单解析，不引入第三方库）
+    fun parseJsonValue(json: String, key: String): String {
+        val regex = Regex("\"$key\"\\s*:\\s*\"([^\"]*)\"")
+        return regex.find(json)?.groupValues?.get(1) ?: "未知"
+    }
 }

@@ -59,19 +59,34 @@ class NetworkWidgetProvider : AppWidgetProvider() {
     Thread {
         try {
             AppLogger.log("开始网络请求...")
-            
+
+            // ---- 国内 IP（ipip.net）----
             val domesticRaw = IpLookup.fetchIpAddress("https://myip.ipip.net")
-            val domesticIp = domesticRaw
-                .replace("当前 IP：", "")
-                .split(" ")
-                .firstOrNull()
-                ?.trim()
-                ?: "解析失败"
-            
+            val ipRegex = Regex("""\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}""")
+            val domesticIp = ipRegex.find(domesticRaw)?.value ?: "解析失败"
+
+            // 完整显示位置信息
+            val locationPart = domesticRaw.substringAfter("来自于：").trim()
+            val domesticDisplay = "$locationPart\n($domesticIp)"
+
+            // ---- 国外 IP ----
+            // 先获取本机公网 IP
             val foreignIp = IpLookup.fetchIpAddress("https://api.ip.sb/ip")
-            
-            AppLogger.log("获取到国内IP：$domesticIp，国外IP：$foreignIp")
-            
+            // 再用 ipapi.co 获取地理位置
+            val geoJson = IpLookup.fetchIpAddress("https://ipapi.co/$foreignIp/json/")
+            val country = IpLookup.parseJsonValue(geoJson, "country_name")
+            val city = IpLookup.parseJsonValue(geoJson, "city")
+            // 如果城市未知，只显示国家
+            val locationDisplay = if (city != "未知" && city.isNotEmpty()) {
+                "$city, $country"
+            } else {
+                country
+            }
+            val foreignDisplay = "$locationDisplay\n($foreignIp)"
+
+            AppLogger.log("国内：$domesticDisplay")
+            AppLogger.log("国外：$foreignDisplay")
+
             val timeText = "更新时间：${
                 SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(Date())
             }"
@@ -79,8 +94,8 @@ class NetworkWidgetProvider : AppWidgetProvider() {
             val updatedViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
                 setTextViewText(R.id.ipip, "国内 IP")
                 setTextViewText(R.id.ipsb, "国外 IP")
-                setTextViewText(R.id.ipipInfo, domesticIp)
-                setTextViewText(R.id.ipsbInfo, foreignIp)
+                setTextViewText(R.id.ipipInfo, domesticDisplay)
+                setTextViewText(R.id.ipsbInfo, foreignDisplay)
                 setTextViewText(R.id.updateTime, timeText)
                 setOnClickPendingIntent(
                     R.id.refresh,

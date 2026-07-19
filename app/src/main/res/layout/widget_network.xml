@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="12dp"
     android:background="@drawable/widget_bg"
-    android:minWidth="200dp">
+    android:minWidth="180dp">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -19,7 +19,8 @@
             android:layout_weight="1"
             android:text="网络信息"
             android:textStyle="bold"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="@color/widget_text_light" />
 
         <Button
             android:id="@+id/refresh"
@@ -27,6 +28,7 @@
             android:layout_height="wrap_content"
             android:text="刷新"
             android:textSize="10sp"
+            android:textColor="@color/widget_text_light"
             android:minWidth="0dp"
             android:minHeight="0dp"
             android:padding="4dp"
@@ -39,7 +41,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="国内 IP"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        android:textColor="@color/widget_text_secondary_light" />
 
     <TextView
         android:id="@+id/ipipInfo"
@@ -47,21 +50,22 @@
         android:layout_height="wrap_content"
         android:text="加载中..."
         android:textSize="14sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textColor="@color/widget_text_light" />
 
-    <!-- 分隔线用 TextView 模拟 -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginVertical="6dp"
-        android:background="#33000000" />
+        android:background="@color/widget_divider_light" />
 
     <TextView
         android:id="@+id/ipsb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="国外 IP"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        android:textColor="@color/widget_text_secondary_light" />
 
     <TextView
         android:id="@+id/ipsbInfo"
@@ -69,7 +73,8 @@
         android:layout_height="wrap_content"
         android:text="加载中..."
         android:textSize="14sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textColor="@color/widget_text_light" />
 
     <TextView
         android:id="@+id/updateTime"
@@ -77,6 +82,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="更新时间：--"
-        android:textSize="10sp" />
+        android:textSize="10sp"
+        android:textColor="@color/widget_text_secondary_light" />
 
 </LinearLayout>
