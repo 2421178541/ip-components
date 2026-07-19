@@ -68,7 +68,7 @@ open class NetworkWidgetProvider : AppWidgetProvider() {
                 .trim()
                 .ifEmpty { "" }
             val domesticInfo = listOfNotNull(domesticIp, domesticLocation)
-                .joinToString("\n")
+                .joinToString(" , ")
                 .ifEmpty { "获取失败" }
 
             // 国外：ip.sb
@@ -76,7 +76,7 @@ open class NetworkWidgetProvider : AppWidgetProvider() {
             val json = JSONObject(geoJson)
             val foreignIp = json.optString("ip", "未知")
             val foreignCountry = json.optString("country", "未知")
-            val foreignInfo = "$foreignIp ($foreignCountry)"
+            val foreignInfo = "$foreignIp, $foreignCountry"
 
             AppLogger.log("国内 IP：$domesticIp ($domesticLocation)，国外 IP：$foreignIp ($foreignCountry)")
 
