@@ -15,5 +15,5 @@
 
 ## 说明
 - 国内 IP 使用 http://myip.ipip.net
-- 国外 IP 使用 https://checkip.amazonaws.com
+- 国外 IP 使用 https://api.ip.sb/ip
 - 如果网络请求失败，会显示“获取失败”

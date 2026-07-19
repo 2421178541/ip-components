@@ -52,55 +52,65 @@ class NetworkWidgetProvider : AppWidgetProvider() {
     }
 
     private fun refreshWidget(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetId: Int
-    ) {
-        Thread {
-            try {
-                AppLogger.log("开始网络请求...")
-                val domesticIp = IpLookup.fetchIpAddress("https://api.ipify.org")
-                val foreignIp = IpLookup.fetchIpAddress("https://checkip.amazonaws.com")
-                AppLogger.log("获取到国内IP：$domesticIp，国外IP：$foreignIp")
-                val timeText = "更新时间：${
-                    SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(Date())
-                }"
+    context: Context,
+    appWidgetManager: AppWidgetManager,
+    appWidgetId: Int
+) {
+    Thread {
+        try {
+            AppLogger.log("开始网络请求...")
+            
+            val domesticRaw = IpLookup.fetchIpAddress("https://myip.ipip.net")
+            val domesticIp = domesticRaw
+                .replace("当前 IP：", "")
+                .split(" ")
+                .firstOrNull()
+                ?.trim()
+                ?: "解析失败"
+            
+            val foreignIp = IpLookup.fetchIpAddress("https://api.ip.sb/ip")
+            
+            AppLogger.log("获取到国内IP：$domesticIp，国外IP：$foreignIp")
+            
+            val timeText = "更新时间：${
+                SimpleDateFormat("HH:mm:ss", Locale.CHINA).format(Date())
+            }"
 
-                val updatedViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
+            val updatedViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
+                setTextViewText(R.id.ipip, "国内 IP")
+                setTextViewText(R.id.ipsb, "国外 IP")
+                setTextViewText(R.id.ipipInfo, domesticIp)
+                setTextViewText(R.id.ipsbInfo, foreignIp)
+                setTextViewText(R.id.updateTime, timeText)
+                setOnClickPendingIntent(
+                    R.id.refresh,
+                    buildRefreshPendingIntent(context, appWidgetId)
+                )
+            }
+
+            appWidgetManager.updateAppWidget(appWidgetId, updatedViews)
+            AppLogger.log("小组件更新成功")
+        } catch (e: Exception) {
+            AppLogger.log("网络请求/更新失败：${e.message}")
+            try {
+                val errorViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
                     setTextViewText(R.id.ipip, "国内 IP")
                     setTextViewText(R.id.ipsb, "国外 IP")
-                    setTextViewText(R.id.ipipInfo, domesticIp)
-                    setTextViewText(R.id.ipsbInfo, foreignIp)
-                    setTextViewText(R.id.updateTime, timeText)
+                    setTextViewText(R.id.ipipInfo, "获取失败")
+                    setTextViewText(R.id.ipsbInfo, "获取失败")
+                    setTextViewText(R.id.updateTime, "请检查网络")
                     setOnClickPendingIntent(
                         R.id.refresh,
                         buildRefreshPendingIntent(context, appWidgetId)
                     )
                 }
-
-                appWidgetManager.updateAppWidget(appWidgetId, updatedViews)
-                AppLogger.log("小组件更新成功")
-            } catch (e: Exception) {
-                AppLogger.log("网络请求/更新失败：${e.message}")
-                try {
-                    val errorViews = RemoteViews(context.packageName, R.layout.widget_network).apply {
-                        setTextViewText(R.id.ipip, "国内 IP")
-                        setTextViewText(R.id.ipsb, "国外 IP")
-                        setTextViewText(R.id.ipipInfo, "获取失败")
-                        setTextViewText(R.id.ipsbInfo, "获取失败")
-                        setTextViewText(R.id.updateTime, "请检查网络")
-                        setOnClickPendingIntent(
-                            R.id.refresh,
-                            buildRefreshPendingIntent(context, appWidgetId)
-                        )
-                    }
-                    appWidgetManager.updateAppWidget(appWidgetId, errorViews)
-                } catch (updateException: Exception) {
-                    AppLogger.log("错误视图更新也失败：${updateException.message}")
-                }
+                appWidgetManager.updateAppWidget(appWidgetId, errorViews)
+            } catch (updateException: Exception) {
+                AppLogger.log("错误视图更新也失败：${updateException.message}")
             }
-        }.start()
-    }
+        }
+    }.start()
+}
 
     private fun buildRefreshPendingIntent(context: Context, appWidgetId: Int): PendingIntent {
         val intent = Intent(context, NetworkWidgetProvider::class.java).apply {
