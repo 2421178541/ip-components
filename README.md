@@ -8,10 +8,7 @@
 - 通过网络请求获取公开 IP 地址
 
 ## 使用方法
-1. 安装 Android Studio 并配置 Android SDK。
-2. 打开项目后同步 Gradle。
-3. 运行应用到 Android 手机或模拟器。
-4. 长按桌面，选择“小组件”，添加“IP Widget”。
+从action中自行下载
 
 ## 说明
 - 国内 IP 使用 http://myip.ipip.net
