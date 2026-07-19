@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/logView"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/btnRefreshWidget"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="日志将显示在这里..."
-        android:textSize="14sp"
-        android:fontFamily="monospace"
-        android:textColor="#000000" />
+        android:text="强制刷新小组件" />
 
-</ScrollView>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:id="@+id/logView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="日志将显示在这里..."
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:textColor="#000000" />
+    </ScrollView>
+
+</LinearLayout>
