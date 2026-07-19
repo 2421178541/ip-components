@@ -6,18 +6,34 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object IpLookup {
-    fun fetchIpAddress(url: String): String {
-        return try {
-            val connection = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = 5000
-                readTimeout = 5000
-                requestMethod = "GET"
+
+    fun fetchIpAddress(urlString: String): String {
+        var connection: HttpURLConnection? = null
+        try {
+            val url = URL(urlString)
+            connection = url.openConnection() as HttpURLConnection
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            connection.requestMethod = "GET"
+
+            val responseCode = connection.responseCode
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw Exception("HTTP $responseCode")
             }
-            connection.connect()
-            val response = connection.inputStream.bufferedReader().use(BufferedReader::readText)
-            response.trim().ifEmpty { "获取失败" }
-        } catch (_: Exception) {
-            "获取失败"
+
+            val reader = BufferedReader(InputStreamReader(connection.inputStream))
+            val response = StringBuilder()
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+                response.append(line)
+            }
+            reader.close()
+            return response.toString().trim()
+        } catch (e: Exception) {
+            AppLogger.log("请求 $urlString 失败：${e.message}")
+            throw e
+        } finally {
+            connection?.disconnect()
         }
     }
 }
